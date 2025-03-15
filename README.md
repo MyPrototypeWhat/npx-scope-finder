@@ -39,7 +39,8 @@ yarn add npx-scope-finder
 import { npxFinder, format } from 'npx-scope-finder';
 
 // Basic usage - get raw package data
-const packages = await npxFinder('@your-scope', {
+// for example：@modelcontextprotocol
+const packages = await npxFinder('@modelcontextprotocol', {
   timeout: 10000,    // Request timeout in milliseconds (default: 10000)
   retries: 3,        // Number of retries for failed requests (default: 3)
   retryDelay: 1000   // Delay between retries in milliseconds (default: 1000)
