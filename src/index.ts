@@ -1,6 +1,3 @@
-import npmFetch from "npm-registry-fetch";
-import type { FetchOptions } from "npm-registry-fetch";
-
 export interface NPMPackage {
   name: string; // 包名
   description?: string; // 包描述
@@ -54,13 +51,63 @@ interface PackageInfo {
   };
 }
 
-export interface NpxFinderOptions extends FetchOptions {
+export interface NpxFinderOptions {
   /**
-   * Whether to include formatted package information in the result
-   * @default false
-   * @deprecated Use format utilities separately if needed
+   * Request timeout in milliseconds
+   * @default 10000
    */
-  includeFormatted?: boolean;
+  timeout?: number;
+  
+  /**
+   * Number of retries for failed requests
+   * @default 3
+   */
+  retries?: number;
+  
+  /**
+   * Delay between retries in milliseconds
+   * @default 1000
+   */
+  retryDelay?: number;
+}
+
+async function fetchWithRetry(url: string, options: NpxFinderOptions = {}): Promise<any> {
+  const {
+    timeout = 10000,
+    retries = 3,
+    retryDelay = 1000
+  } = options;
+
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), timeout);
+      
+      const response = await fetch(url, {
+        signal: controller.signal,
+        headers: {
+          'Accept': 'application/json',
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      lastError = error as Error;
+      if (attempt < retries) {
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+    }
+  }
+  
+  throw lastError;
 }
 
 /**
@@ -78,30 +125,14 @@ export async function npxFinder(
     throw new Error('Scope must start with "@"');
   }
 
-  const fetchOpts: FetchOptions = {
-    timeout: 10000,
-    fetchRetries: 3,
-    fetchRetryFactor: 2,
-    fetchRetryMinTimeout: 1000,
-    fetchRetryMaxTimeout: 15000,
-    ...options,
-  };
-
   try {
-    const searchResult = await npmFetch
-      .json("/-/v1/search", {
-        ...fetchOpts,
-        query: {
-          text: scope,
-        },
-      })
-      .then((result) => {
-        const typedResult = result as unknown as SearchResponse;
-        if (!typedResult.objects || !Array.isArray(typedResult.objects)) {
-          throw new Error("Invalid search response format");
-        }
-        return typedResult;
-      });
+    // 使用 npm registry API 搜索包
+    const searchUrl = `https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(scope)}`;
+    const searchResult = await fetchWithRetry(searchUrl, options);
+
+    if (!searchResult.objects || !Array.isArray(searchResult.objects)) {
+      throw new Error("Invalid search response format");
+    }
 
     const packages: NPMPackage[] = [];
 
@@ -112,15 +143,13 @@ export async function npxFinder(
           continue;
         }
 
-        const packageInfo = await npmFetch
-          .json(packageName, fetchOpts)
-          .then((result) => {
-            const typedResult = result as unknown as PackageInfo;
-            if (!typedResult["dist-tags"] || !typedResult.versions) {
-              throw new Error("Invalid package info format");
-            }
-            return typedResult;
-          });
+        // 获取包的详细信息
+        const packageUrl = `https://registry.npmjs.org/${encodeURIComponent(packageName)}`;
+        const packageInfo = await fetchWithRetry(packageUrl, options);
+
+        if (!packageInfo["dist-tags"] || !packageInfo.versions) {
+          throw new Error("Invalid package info format");
+        }
 
         const latestVersion = packageInfo["dist-tags"].latest;
         const latestVersionInfo = packageInfo.versions[latestVersion];

@@ -1,12 +1,14 @@
 {
   "name": "npx-scope-finder",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "A tool to find executable (npx-compatible) packages within a specific npm scope",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "ts-node test.ts",
+    "test": "mocha -r ts-node/register 'test/**/*.test.ts'",
+    "test:functional": "mocha -r ts-node/register 'test/functional.test.ts'",
+    "test:retry": "mocha -r ts-node/register 'test/retry.test.ts'",
     "prepublishOnly": "npm run build",
     "clean": "rm -rf dist",
     "prebuild": "npm run clean",
@@ -36,13 +38,12 @@
   },
   "homepage": "https://github.com/MyPrototypeWhat/npx-scope-finder#readme",
   "license": "MIT",
-  "dependencies": {
-    "npm-registry-fetch": "^14.0.5"
-  },
   "devDependencies": {
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
-    "typescript": "^5.0.0",
-    "ts-node": "^10.9.2"
+    "mocha": "^10.8.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.0.0"
   },
   "files": [
     "dist",
@@ -51,5 +52,6 @@
   ],
   "engines": {
     "node": ">=18"
-  }
+  },
+  "packageManager": "pnpm@10.4.1+sha512.c753b6c3ad7afa13af388fa6d808035a008e30ea9993f58c6663e2bc5ff21679aa834db094987129aa4d488b86df57f7b634981b2f827cdcacc698cc0cfb88af"
 }

@@ -2,10 +2,35 @@
 
 A specialized tool for finding executable (npx-compatible) packages within a specific npm scope. This tool helps you discover all packages in a scope that can be run using `npx`.
 
+✨ **Cross-Platform Support**: Works in both Node.js and browser environments!
+
+## Features
+
+- 🌐 **Universal Compatibility**: Works in both Node.js and browser environments
+- 🔄 **Robust Error Handling**: Built-in retry mechanism for network issues
+- 🎯 **Scope-Focused**: Easily find all executable packages within your organization's scope
+- 📦 **Zero Dependencies**: Uses native fetch API, no external dependencies
+- 🎨 **Flexible Formatting**: Built-in utilities for various output formats
+- 💪 **Type Safety**: Full TypeScript support with detailed type definitions
+
+## Changelog
+
+### 1.1.0 (2024-03-15)
+
+- ✨ Added browser support
+- 🔄 Replaced npm-registry-fetch with native fetch API
+- ⚡️ Improved retry mechanism with better error handling
+- 🧪 Added comprehensive retry tests
+- 📦 Reduced package size by removing external dependencies
+
 ## Installation
 
 ```bash
 npm install npx-scope-finder
+# or
+pnpm add npx-scope-finder
+# or
+yarn add npx-scope-finder
 ```
 
 ## Usage
@@ -14,7 +39,11 @@ npm install npx-scope-finder
 import { npxFinder, format } from 'npx-scope-finder';
 
 // Basic usage - get raw package data
-const packages = await npxFinder('@your-scope');
+const packages = await npxFinder('@your-scope', {
+  timeout: 10000,    // Request timeout in milliseconds (default: 10000)
+  retries: 3,        // Number of retries for failed requests (default: 3)
+  retryDelay: 1000   // Delay between retries in milliseconds (default: 1000)
+});
 console.log(`Found ${packages.length} executable packages`);
 
 // Access raw data directly
@@ -56,10 +85,10 @@ The main function for finding executable packages in a scope.
 #### Parameters
 
 - `scope`: The npm scope to search in (e.g., '@your-scope')
-- `options`: Optional npm-registry-fetch options
+- `options`: Optional configuration
   - `timeout`: Request timeout in milliseconds (default: 10000)
-  - `fetchRetries`: Number of retries for failed requests (default: 3)
-  - ...plus all options from npm-registry-fetch
+  - `retries`: Number of retries for failed requests (default: 3)
+  - `retryDelay`: Delay between retries in milliseconds (default: 1000)
 
 #### Returns
 
@@ -121,14 +150,41 @@ Dependencies:
   - chalk: ^5.0.0
 ```
 
-## Why use this package?
+## Development
 
-- **Raw Data Access**: Get direct access to package data for custom processing
-- **Flexible Formatting**: Use built-in format utilities or create your own
-- **Scope-focused**: Easily find all executable packages within your organization's scope
-- **npx-ready**: Only shows packages that can be run with npx
-- **Type Safety**: Full TypeScript support with detailed type definitions
+### Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/MyPrototypeWhat/npx-scope-finder.git
+cd npx-scope-finder
+
+# Install dependencies
+pnpm install
+
+# Build the project
+pnpm build
+```
+
+### Testing
+
+```bash
+# Run all tests
+pnpm test
+
+# Run specific test suites
+pnpm test:functional  # Run functional tests
+pnpm test:retry      # Run retry mechanism tests
+```
+
+### Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
-MIT 
+MIT
