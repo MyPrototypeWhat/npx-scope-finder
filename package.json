@@ -1,0 +1,55 @@
+{
+  "name": "npx-scope-finder",
+  "version": "1.0.0",
+  "description": "A tool to find executable (npx-compatible) packages within a specific npm scope",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "ts-node test.ts",
+    "prepublishOnly": "npm run build",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "npm",
+    "npx",
+    "scope",
+    "executable",
+    "bin",
+    "finder",
+    "package",
+    "search",
+    "npm-registry"
+  ],
+  "author": {
+    "name": "MyPrototypeWhat",
+    "url": "https://github.com/MyPrototypeWhat"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MyPrototypeWhat/npx-scope-finder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MyPrototypeWhat/npx-scope-finder/issues"
+  },
+  "homepage": "https://github.com/MyPrototypeWhat/npx-scope-finder#readme",
+  "license": "MIT",
+  "dependencies": {
+    "npm-registry-fetch": "^14.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "ts-node": "^10.9.2"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  }
+}
