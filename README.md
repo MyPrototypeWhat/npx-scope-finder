@@ -10,10 +10,19 @@ A specialized tool for finding executable (npx-compatible) packages within a spe
 - 🔄 **Robust Error Handling**: Built-in retry mechanism for network issues
 - 🎯 **Scope-Focused**: Easily find all executable packages within your organization's scope
 - 📦 **Zero Dependencies**: Uses native fetch API, no external dependencies
-- 🎨 **Flexible Formatting**: Built-in utilities for various output formats
+- ⚡ **High Performance**: Uses concurrent requests for faster results
+- 🛡️ **Fault Tolerant**: Uses `Promise.allSettled` to handle partial failures gracefully
+- 🔍 **Complete Data**: Includes full package metadata in the `original` property
 - 💪 **Type Safety**: Full TypeScript support with detailed type definitions
 
 ## Changelog
+
+### 1.2.0 (2024-03-15)
+
+- ⚡ Added concurrent requests for improved performance
+- 🛡️ Implemented `Promise.allSettled` for fault-tolerant package fetching
+- 🔍 Added original package data in the `original` property
+- 🗑️ Removed format utilities for a more streamlined API
 
 ### 1.1.0 (2024-03-15)
 
@@ -36,33 +45,33 @@ yarn add npx-scope-finder
 ## Usage
 
 ```typescript
-import { npxFinder, format } from 'npx-scope-finder';
+import { npxFinder } from 'npx-scope-finder';
 
 // Basic usage - get raw package data
-// for example：@modelcontextprotocol
-const packages = await npxFinder('@modelcontextprotocol', {
+const packages = await npxFinder('@your-scope', {
   timeout: 10000,    // Request timeout in milliseconds (default: 10000)
   retries: 3,        // Number of retries for failed requests (default: 3)
   retryDelay: 1000   // Delay between retries in milliseconds (default: 1000)
 });
 console.log(`Found ${packages.length} executable packages`);
 
-// Access raw data directly
+// Access package data
 packages.forEach(pkg => {
-  console.log(`Package: ${pkg.name}`);
+  console.log(`Package: ${pkg.name}@${pkg.version}`);
+  console.log(`Description: ${pkg.description || 'No description'}`);
   console.log('Executable commands:', Object.keys(pkg.bin || {}));
-});
-
-// Use format utilities as needed
-packages.forEach(pkg => {
-  // Format specific sections
-  console.log(format.basic(pkg));     // Basic info
-  console.log(format.commands(pkg));  // Commands
-  console.log(format.usage(pkg));     // Usage
-  console.log(format.links(pkg));     // Links
   
-  // Or get all information in standard format
-  console.log(format.all(pkg));
+  // Access full original npm registry data
+  console.log('Full package data:', pkg.original);
+  
+  // Access other metadata
+  if (pkg.links?.repository) {
+    console.log(`Repository: ${pkg.links.repository}`);
+  }
+  
+  if (pkg.dependencies) {
+    console.log('Dependencies:', Object.keys(pkg.dependencies).length);
+  }
 });
 
 // Custom formatting example
@@ -109,46 +118,37 @@ interface NPMPackage {
     repository?: string;    // Code repository
     homepage?: string;      // Homepage
   };
+  original?: any;            // Complete original package data from npm registry
 }
 ```
 
-### Format Utilities
-
-`format` object provides utilities for formatting package information:
-
-- `format.basic(pkg)`: Basic package information (name, version, description, keywords)
-- `format.commands(pkg)`: Executable commands information
-- `format.usage(pkg)`: Usage instructions
-- `format.links(pkg)`: Related links
-- `format.dependencies(pkg)`: Package dependencies
-- `format.all(pkg)`: All information in standard format
-
-Each format function returns either a formatted string or null if no relevant information is available.
-
 ## Example Output
 
-Using `format.all()`:
+Example package object:
 
-```
-Package: @your-scope/cli-tool
-Version: 1.0.0
-Description: A command line tool
-Keywords: cli, tool, automation
-
-Executable Commands:
-  - your-tool: ./bin/cli.js
-
-Usage:
-  npx @your-scope/cli-tool
-
-Links:
-  - NPM: https://www.npmjs.com/package/@your-scope/cli-tool
-  - REPOSITORY: https://github.com/your-org/cli-tool
-  - HOMEPAGE: https://your-org.github.io/cli-tool
-
-Dependencies:
-  - commander: ^9.0.0
-  - chalk: ^5.0.0
+```javascript
+{
+  name: '@your-scope/cli-tool',
+  version: '1.0.0',
+  description: 'A command line tool',
+  bin: {
+    'your-tool': './bin/cli.js'
+  },
+  dependencies: {
+    'commander': '^9.0.0',
+    'chalk': '^5.0.0'
+  },
+  keywords: ['cli', 'tool', 'automation'],
+  links: {
+    npm: 'https://www.npmjs.com/package/@your-scope/cli-tool',
+    repository: 'https://github.com/your-org/cli-tool',
+    homepage: 'https://your-org.github.io/cli-tool'
+  },
+  original: {
+    // Complete package data from npm registry
+    // ...
+  }
+}
 ```
 
 ## Development
@@ -175,7 +175,7 @@ pnpm test
 
 # Run specific test suites
 pnpm test:functional  # Run functional tests
-pnpm test:retry      # Run retry mechanism tests
+pnpm test:retry      # Run retry mechanisms tests
 ```
 
 ### Contributing
