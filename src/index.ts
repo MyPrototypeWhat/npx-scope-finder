@@ -1,96 +1,14 @@
-export interface NPMPackage {
-  name: string; // 包名
-  description?: string; // 包描述
-  version: string; // 最新版本
-  bin?: Record<string, string>; // 可执行文件
-  dependencies?: Record<string, string>; // 依赖
-  scripts?: Record<string, string>; // npm scripts
-  keywords?: string[]; // 包的关键字
-  links?: {
-    // 相关链接
-    npm?: string; // npm 包页面
-    repository?: string; // 代码仓库
-    homepage?: string; // 主页
-  };
-  original?: any; // 原始完整数据
-}
-
-interface SearchResponse {
-  objects: Array<{
-    package: {
-      name: string;
-      scope: string;
-      version: string;
-      description: string;
-      keywords: string[];
-      date: string;
-    };
-  }>;
-  total: number;
-  time: string;
-}
-
-interface PackageInfo {
-  name: string;
-  "dist-tags": {
-    latest: string;
-  };
-  versions: {
-    [version: string]: {
-      name: string;
-      version: string;
-      description?: string;
-      bin?: Record<string, string>;
-      scripts?: Record<string, string>;
-      dependencies?: Record<string, string>;
-      keywords?: string[];
-      repository?: {
-        type: string;
-        url: string;
-      };
-      homepage?: string;
-    };
-  };
-}
-
-type PackageSuccessResult = {
-  packageName: string;
-  packageInfo: any;
-  success: true;
-};
-
-type PackageErrorResult = {
-  packageName: string;
-  error: any;
-  success: false;
-};
-
-type PackageResult = PackageSuccessResult | PackageErrorResult;
-
-export interface NpxFinderOptions {
-  /**
-   * Request timeout in milliseconds
-   * @default 10000
-   */
-  timeout?: number;
-
-  /**
-   * Number of retries for failed requests
-   * @default 3
-   */
-  retries?: number;
-
-  /**
-   * Delay between retries in milliseconds
-   * @default 1000
-   */
-  retryDelay?: number;
-}
+import type {
+  NPMPackage,
+  NpxFinderOptions,
+  SearchResponse,
+  PackageInfo
+} from "./types";
 
 async function fetchWithRetry(
   url: string,
   options: NpxFinderOptions = {}
-): Promise<any> {
+): Promise<unknown> {
   const { timeout = 10000, retries = 3, retryDelay = 1000 } = options;
 
   let lastError: Error | null = null;
@@ -141,7 +59,6 @@ export async function npxFinder(
   }
 
   try {
-    // 使用 npm registry API 搜索包
     const searchUrl = `https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(
       scope
     )}`;
@@ -154,7 +71,6 @@ export async function npxFinder(
       throw new Error("Invalid search response format");
     }
 
-    // 筛选出属于指定 scope 的包
     const scopePackages = searchResult.objects
       .filter((pkg) => pkg.package.name.startsWith(scope))
       .map((pkg) => pkg.package.name);
@@ -163,37 +79,36 @@ export async function npxFinder(
       return [];
     }
 
-    // 并发获取包的详细信息
     const packagePromises = scopePackages.map((packageName) => {
       const packageUrl = `https://registry.npmjs.org/${encodeURIComponent(
         packageName
       )}`;
-      return fetchWithRetry(packageUrl, options).then(packageInfo => ({
+      return fetchWithRetry(packageUrl, options).then((packageInfo) => ({
         packageName,
-        packageInfo
+        packageInfo,
       }));
     });
 
     const results = await Promise.allSettled(packagePromises);
 
-    // 处理成功获取的包信息
     const packages: NPMPackage[] = [];
 
     for (const result of results) {
-      if (result.status === 'rejected') {
-        console.error(`Error fetching package details:`, result.reason);
+      if (result.status === "rejected") {
+        console.error("Error fetching package details:", result.reason);
         continue;
       }
 
       const { packageName, packageInfo } = result.value;
+      const typedPackageInfo = packageInfo as PackageInfo;
 
-      if (!packageInfo["dist-tags"] || !packageInfo.versions) {
-        console.error(`Invalid package info format: ${packageName}`);
+      if (!typedPackageInfo["dist-tags"] || !typedPackageInfo.versions) {
+        console.error("Invalid package info format:", packageName);
         continue;
       }
 
-      const latestVersion = packageInfo["dist-tags"].latest;
-      const latestVersionInfo = packageInfo.versions[latestVersion];
+      const latestVersion = typedPackageInfo["dist-tags"].latest;
+      const latestVersionInfo = typedPackageInfo.versions[latestVersion];
 
       if (isExecutablePackage(latestVersionInfo)) {
         packages.push({
@@ -211,7 +126,7 @@ export async function npxFinder(
               .replace(/\.git$/, ""),
             homepage: latestVersionInfo.homepage,
           },
-          original: packageInfo, // 保存原始完整数据
+          original: typedPackageInfo,
         });
       }
     }
@@ -223,6 +138,15 @@ export async function npxFinder(
   }
 }
 
-function isExecutablePackage(packageInfo: any): boolean {
+function isExecutablePackage(
+  packageInfo: PackageInfo["versions"][string]
+): boolean {
   return !!packageInfo.bin;
 }
+
+export type {
+  NPMPackage,
+  NpxFinderOptions,
+  SearchResponse,
+  PackageInfo
+} from "./types";

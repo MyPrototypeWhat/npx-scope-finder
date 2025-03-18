@@ -1,11 +1,12 @@
 {
   "name": "npx-scope-finder",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "A tool to find executable (npx-compatible) packages within a specific npm scope",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && npm run minify",
+    "minify": "terser dist/index.js -o dist/index.js --compress --mangle",
     "test": "mocha -r ts-node/register 'test/**/*.test.ts'",
     "test:functional": "mocha -r ts-node/register 'test/functional.test.ts'",
     "test:retry": "mocha -r ts-node/register 'test/retry.test.ts'",
@@ -42,13 +43,15 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^20.0.0",
     "mocha": "^10.8.2",
+    "terser": "^5.39.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.0.0"
   },
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=18"

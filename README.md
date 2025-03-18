@@ -14,8 +14,22 @@ A specialized tool for finding executable (npx-compatible) packages within a spe
 - 🛡️ **Fault Tolerant**: Uses `Promise.allSettled` to handle partial failures gracefully
 - 🔍 **Complete Data**: Includes full package metadata in the `original` property
 - 💪 **Type Safety**: Full TypeScript support with detailed type definitions
+- 🔻 **Optimized Size**: Code is minified for smaller package size
 
 ## Changelog
+
+A detailed changelog is available in the [CHANGELOG.md](./CHANGELOG.md) file.
+
+### 1.3.0 (2024-03-18)
+
+- 🔧 Improved project structure with separate type definitions
+- 🗑️ Removed code comments for smaller bundle size
+- 🔻 Added code minification for optimized package size
+- ⬆️ Updated TypeScript target to ES2020
+- 🧩 Exported all TypeScript interfaces and types for better developer experience
+- 📝 Enhanced type definitions based on official npm Registry API documentation
+- 🔄 Added links to official npm documentation for better TypeScript integration
+- 🧹 Removed unused type definitions to reduce bundle size and improve code clarity
 
 ### 1.2.0 (2024-03-15)
 
@@ -118,9 +132,30 @@ interface NPMPackage {
     repository?: string;    // Code repository
     homepage?: string;      // Homepage
   };
-  original?: any;            // Complete original package data from npm registry
+  original?: PackageInfo;    // Complete original package data from npm registry
 }
 ```
+
+> **Type Definitions**: The `NPMPackage` interface and all other type definitions are derived from the [official npm Registry API documentation](https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md).
+
+### Exported Types
+
+The library exports all types for maximum flexibility:
+
+```typescript
+import { 
+  NPMPackage,           // Main package result type
+  NpxFinderOptions,     // Options for the npxFinder function
+  SearchResponse,       // Raw response from npm registry search
+  PackageInfo          // Detailed package information from npm registry
+} from 'npx-scope-finder';
+```
+
+This allows developers to easily extend the library or implement custom type-safe handling of the returned data.
+
+> **Note**: The type definitions in this library are based on the official npm Registry API documentation:
+> - [Package Metadata Documentation](https://github.com/npm/registry/blob/master/docs/responses/package-metadata.md)
+> - [Registry API Documentation](https://github.com/npm/registry/blob/master/docs/REGISTRY-API.md)
 
 ## Example Output
 
