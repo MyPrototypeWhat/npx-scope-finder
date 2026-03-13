@@ -55,47 +55,7 @@ export interface PackageInfo {
     [tag: string]: string;
   };
   versions: {
-    [version: string]: {
-      name: string;
-      version: string;
-      description?: string;
-      bin?: Record<string, string>;
-      scripts?: Record<string, string>;
-      dependencies?: Record<string, string>;
-      devDependencies?: Record<string, string>;
-      keywords?: string[];
-      repository?: {
-        type: string;
-        url: string;
-      };
-      homepage?: string;
-      author?: {
-        name?: string;
-        email?: string;
-        url?: string;
-      };
-      license?: string;
-      // The dist object contains tarball URL and integrity hashes
-      dist: {
-        shasum: string;
-        tarball: string;
-        integrity?: string;
-        fileCount?: number;
-        unpackedSize?: number;
-        "npm-signature"?: string;
-      };
-      _id?: string;
-      _npmVersion?: string;
-      _npmUser?: {
-        name: string;
-        email: string;
-      };
-      maintainers?: Array<{
-        name?: string;
-        email?: string;
-        url?: string;
-      }>;
-    };
+    [version: string]: LatestVersionInfo;
   };
   time?: {
     created: string;
@@ -107,6 +67,52 @@ export interface PackageInfo {
   _rev?: string;
 }
 
+export interface LatestVersionInfo {
+  name: string;
+  version: string;
+  description?: string;
+  bin?: Record<string, string>;
+  scripts?: Record<string, string>;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  keywords?: string[];
+  repository?: {
+    type: string;
+    url: string;
+  };
+  homepage?: string;
+  author?: {
+    name?: string;
+    email?: string;
+    url?: string;
+  };
+  license?: string;
+  dist: {
+    shasum: string;
+    tarball: string;
+    integrity?: string;
+    fileCount?: number;
+    unpackedSize?: number;
+    "npm-signature"?: string;
+  };
+  _id?: string;
+  _npmVersion?: string;
+  _npmUser?: {
+    name: string;
+    email: string;
+  };
+  maintainers?: Array<{
+    name?: string;
+    email?: string;
+    url?: string;
+  }>;
+}
+
+/**
+ * Logger interface for custom logging
+ */
+export type Logger = { error: (...args: unknown[]) => void };
+
 /**
  * Configuration options for the npxFinder function
  */
@@ -114,4 +120,8 @@ export interface NpxFinderOptions {
   timeout?: number;
   retries?: number;
   retryDelay?: number;
-} 
+  concurrency?: number;
+  maxPages?: number;
+  includeOriginal?: boolean;
+  logger?: Logger;
+}

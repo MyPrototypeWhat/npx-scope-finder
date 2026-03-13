@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-03-13
+
+### Breaking Changes
+- `original` field is no longer populated by default. Use `includeOriginal: true` option to include full package metadata.
+
+### Added
+- ESM + CJS dual format output via `tsdown` (replaces `tsc` + `terser`)
+- Search pagination (`size=250`, configurable `maxPages`) — large scopes no longer truncated at 20 results
+- `/latest` endpoint for package metadata — fetches only the latest version instead of all versions (KB vs MB)
+- Concurrency control via `p-limit` (`concurrency` option, default 10)
+- Exponential backoff retry with `2^attempt` delay multiplier
+- HTTP 429 handling with `Retry-After` header support
+- `logger` option to replace hardcoded `console.error` (default: silent)
+- `includeOriginal` option to opt-in to full package metadata
+- `maxPages` option to control search pagination depth (default 5, up to 1250 packages)
+- Exported `LatestVersionInfo` and `Logger` types
+- Switched test framework from Mocha to Vitest
+
+### Changed
+- Package output format: `dist/index.mjs` (ESM) + `dist/index.cjs` (CJS) with corresponding `.d.mts` / `.d.cts`
+- `package.json` now includes `"type": "module"` and `exports` field
+
+### Removed
+- Removed `console.error` calls — errors are now routed through the optional `logger`
+- Removed `terser` and `ts-node` dev dependencies
+
 ## [1.3.0] - 2024-03-18
 
 ### Added
@@ -55,4 +81,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Initial release
 - Support for finding executable (npx-compatible) packages in a specific npm scope
 - Basic retry mechanism for network resilience
-- TypeScript support with type definitions 
+- TypeScript support with type definitions
