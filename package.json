@@ -1,6 +1,6 @@
 {
   "name": "npx-scope-finder",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "type": "module",
   "description": "A tool to find executable (npx-compatible) packages within a specific npm scope",
   "exports": {
